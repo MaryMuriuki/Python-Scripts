@@ -1,0 +1,38 @@
+- Configure
+en
+conf t
+hostname xxxxx
+enable password xxxxxx
+username admin password xxxxx
+clock set? 17:12:34 12 December 2024
+- Configure interfaces
+interface g1/1
+no sh
+ip address 192.168.10.10 255.255.255.0
+
+- Configure policies
+- refer policies with its name ( INSIDE, OUTSIDE, DMZ)
+nameif INSIDE
+security-level 100
+wr mem - save config
+
+#Configure default static route
+route outside 0.0.0.0 0.0.0.0 IP destination
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

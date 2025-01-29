@@ -1,0 +1,109 @@
+: Saved
+:
+ASA Version 9.6(1)
+!
+hostname 5506
+names
+!
+interface GigabitEthernet1/1
+ nameif inside
+ security-level 100
+ ip address 10.0.0.2 255.255.255.252
+!
+interface GigabitEthernet1/2
+ nameif DMZ
+ security-level 50
+ ip address 172.16.1.254 255.255.255.0
+!
+interface GigabitEthernet1/3
+ nameif outside
+ security-level 0
+ ip address 203.0.113.1 255.255.255.248
+!
+interface GigabitEthernet1/4
+ no nameif
+ no security-level
+ no ip address
+ shutdown
+!
+interface GigabitEthernet1/5
+ no nameif
+ no security-level
+ no ip address
+ shutdown
+!
+interface GigabitEthernet1/6
+ no nameif
+ no security-level
+ no ip address
+ shutdown
+!
+interface GigabitEthernet1/7
+ no nameif
+ no security-level
+ no ip address
+ shutdown
+!
+interface GigabitEthernet1/8
+ no nameif
+ no security-level
+ no ip address
+ shutdown
+!
+interface Management1/1
+ management-only
+ no nameif
+ no security-level
+ no ip address
+ shutdown
+!
+object network INTERNET
+ subnet 172.16.1.0 255.255.255.0
+ nat (DMZ,outside) dynamic interface
+object network Internet-dmz
+ subnet 10.0.0.0 255.255.255.252
+ nat (inside,outside) dynamic interface
+object network WEBSERVER
+ host 172.16.1.1
+ nat (DMZ,outside) static 203.0.113.3
+!
+route outside 0.0.0.0 0.0.0.0 203.0.113.2 1
+!
+access-list INSIDE extended permit icmp any any echo
+access-list INSIDE extended permit tcp any object Internet-dmz eq www
+access-list INSIDE extended permit tcp any object INTERNET eq www
+access-list OUTSIDE extended permit tcp any object WEBSERVER eq www
+access-list OUTSIDE extended deny icmp any any
+access-list DMZ extended permit tcp any object INTERNET eq www
+!
+!
+access-group INSIDE in interface inside
+access-group OUTSIDE in interface outside
+access-group DMZ in interface DMZ
+!
+!
+class-map inspection_default
+ match default-inspection-traffic
+!
+policy-map type inspect dns preset_dns_map
+ parameters
+  message-length maximum 512
+policy-map global_policy
+ class inspection_default
+  inspect dns preset_dns_map
+  inspect ftp 
+  inspect tftp 
+!
+service-policy global_policy global
+!
+telnet timeout 5
+ssh timeout 5
+!
+!
+!
+!
+router rip
+ network 10.0.0.0
+ network 172.16.0.0
+ default-information originate
+!
